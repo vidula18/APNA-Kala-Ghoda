@@ -1,0 +1,87 @@
+Now we are ready to connect APNA to its existing Supabase backend.
+
+IMPORTANT:
+
+APNA already has an existing Supabase project and existing data.
+
+Do NOT create a new Supabase project.
+
+Do NOT create a new database.
+
+Do NOT use mock data as the permanent data source.
+
+Do NOT recreate or redesign the database schema.
+
+Do NOT modify any existing Supabase tables.
+
+Do NOT use the paid Supabase integration if it requires a plan upgrade.
+
+Instead, prepare the application to connect to the existing Supabase project using environment variables.
+
+Use:
+
+NEXT_PUBLIC_SUPABASE_URL
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+I will provide these through the project's secure environment-variable settings.
+
+SECURITY
+
+Never ask me to put a Supabase service_role key or other secret key into client-side code.
+
+Never hard-code credentials into the source code.
+
+Use the public Supabase URL and anon/public key through environment variables.
+
+EXISTING APNA DATA
+
+The existing backend contains the real APNA research data.
+
+The important conceptual relationship is:
+
+SESSION
++
+CHARACTER
++
+LOCATION
++
+QUESTION
++
+RESPONSE
+→
+EXPLORATION MAP
+
+The existing database is the source of truth.
+
+The frontend must adapt to the existing database rather than changing the database to fit the frontend.
+
+CURRENT IMPLEMENTATION
+
+The character positions currently shown on the map are temporary visual test positions.
+
+Once the Supabase connection is available, these temporary positions should eventually be replaced by real APNA data.
+
+Do NOT replace them yet.
+
+First:
+
+1. Set up the Supabase client correctly.
+2. Connect it using the environment variables.
+3. Verify that the connection works.
+4. Create a clean data-access layer for APNA.
+5. Keep the current visual interface unchanged.
+6. Keep the temporary character markers working until we explicitly replace them with real data.
+
+Do NOT yet:
+- fetch all data into the map
+- redesign the map
+- change the character markers
+- create new database tables
+- create fake observations
+- build the memory/story card
+- build the submission flow
+
+After setting up the connection, tell me exactly what is ready and what information you still need from the existing APNA schema to safely connect the real data.
+
+Do not make any database changes.
