@@ -514,13 +514,67 @@
   padding: 0 24px;
 }
 
+.apna-map-wrap {
+  position: relative;
+  width: min(58vw, 520px);
+}
+
 .apna-map {
   display: block;
-  width: min(58vw, 520px);
+  width: 100%;
   height: auto;
   max-height: calc(100dvh - 118px);
   object-fit: contain;
   object-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.apna-character-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.apna-character-marker {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  width: clamp(54px, 7.6vw, 78px);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  transition:
+    transform 180ms ease,
+    outline-color 180ms ease,
+    outline-offset 180ms ease;
+}
+
+.apna-character-marker:hover {
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.apna-character-marker:focus-visible {
+  outline: 2px solid #353b67;
+  outline-offset: 4px;
+}
+
+.apna-character-marker.is-selected {
+  outline: 2px solid #353b67;
+  outline-offset: 5px;
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.apna-character-marker img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -551,8 +605,15 @@
   }
 
   .apna-map {
-    width: min(88vw, 360px);
     max-height: calc(100dvh - 112px);
+  }
+
+  .apna-map-wrap {
+    width: min(88vw, 360px);
+  }
+
+  .apna-character-marker {
+    width: clamp(50px, 15vw, 66px);
   }
 }
 
@@ -566,8 +627,11 @@
   }
 
   .apna-map {
-    width: min(32vw, 290px);
     max-height: calc(100dvh - 52px);
+  }
+
+  .apna-map-wrap {
+    width: min(32vw, 290px);
   }
 }
 

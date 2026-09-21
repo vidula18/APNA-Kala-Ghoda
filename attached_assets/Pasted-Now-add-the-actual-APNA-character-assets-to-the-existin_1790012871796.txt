@@ -1,0 +1,98 @@
+Now add the actual APNA character assets to the existing Kala Ghoda map.
+
+Do not redesign the current home screen.
+
+Do not change:
+- the map size
+- map position
+- page background
+- APNA logo
+- Info button
+- Filter button
+- existing spacing
+- overall composition
+
+CHARACTERS
+
+Use ONLY the four character assets I have provided.
+
+These are the actual APNA characters.
+
+Do not:
+- generate new characters
+- create avatars
+- redraw the characters
+- change their illustration style
+- invent character names
+- replace them with icons
+- replace them with generic profile images
+
+The character artwork should remain exactly as provided.
+
+MAP MARKERS
+
+Place the characters directly on the Kala Ghoda map as visual markers.
+
+The character itself should be the marker.
+
+Do NOT use:
+- circular map pins
+- blue dots
+- location pins
+- numbered markers
+- marker bubbles
+- generic avatar circles
+
+The characters should feel visually embedded within the map.
+
+TEMPORARY POSITIONS
+
+For now, use temporary hard-coded positions on the map purely for visual testing.
+
+Place the four characters at different natural-looking positions across the map.
+
+These positions are temporary.
+
+Do NOT:
+- save these positions to Supabase
+- create database records
+- treat these as real participant data
+- create fake memories
+
+CHARACTER SIZE
+
+Make the characters clearly visible at the current map scale.
+
+They should be smaller than the map itself but large enough that users can immediately recognise them as illustrated people.
+
+Keep their proportions intact.
+
+INTERACTION
+
+For now, clicking a character should only create a simple selected state.
+
+For example, the selected character can have a subtle visual emphasis.
+
+Do NOT open a story card yet.
+
+Do NOT create a modal.
+
+Do NOT navigate anywhere.
+
+Do NOT connect the characters to Supabase yet.
+
+IMPORTANT
+
+The purpose of this step is ONLY to establish:
+
+APNA MAP
++
+ACTUAL CHARACTER ASSETS
++
+CHARACTER MARKERS
++
+BASIC SELECTION STATE
+
+Do not add any other functionality.
+
+Show me the result after implementing this.

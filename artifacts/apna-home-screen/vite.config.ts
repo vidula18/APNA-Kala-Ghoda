@@ -56,6 +56,13 @@ export default defineConfig({
         '..',
         'attached_assets',
       ),
+      '@character-assets': path.resolve(
+        import.meta.dirname,
+        '..',
+        '..',
+        '.conversation',
+        'attached_assets',
+      ),
     },
     dedupe: ['react', 'react-dom'],
   },

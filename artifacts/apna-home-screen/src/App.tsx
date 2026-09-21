@@ -1,10 +1,14 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import kalaGhodaMap from '@assets/Asset_1_1790012101847.svg';
+import characterOne from '@character-assets/character_1_1790011497388.PNG';
+import characterTwo from '@character-assets/character_2_1790011497388.PNG';
+import characterThree from '@character-assets/character_3_1790011497388.PNG';
+import characterFour from '@character-assets/character_4_1790011497389.PNG';
 import {
   Route,
   Switch,
@@ -14,7 +18,18 @@ import {
 
 const queryClient = new QueryClient();
 
+const characterMarkers = [
+  { id: 1, image: characterOne, x: 32, y: 25 },
+  { id: 2, image: characterTwo, x: 63, y: 36 },
+  { id: 3, image: characterThree, x: 37, y: 58 },
+  { id: 4, image: characterFour, x: 61, y: 73 },
+];
+
 function Home() {
+  const [selectedCharacterId, setSelectedCharacterId] = useState<
+    number | null
+  >(null);
+
   return (
     <main className="apna-home" data-testid="home-screen">
       <header className="apna-header" data-testid="home-header">
@@ -44,13 +59,38 @@ function Home() {
       </header>
 
       <section className="apna-map-stage" aria-label="Kala Ghoda map">
-        <img
-          className="apna-map"
-          src={kalaGhodaMap}
-          alt="Illustrated map of Kala Ghoda"
-          draggable="false"
-          data-testid="img-kala-ghoda-map"
-        />
+        <div className="apna-map-wrap">
+          <img
+            className="apna-map"
+            src={kalaGhodaMap}
+            alt="Illustrated map of Kala Ghoda"
+            draggable="false"
+            data-testid="img-kala-ghoda-map"
+          />
+          <div className="apna-character-layer" aria-label="Character markers">
+            {characterMarkers.map((marker) => (
+              <button
+                key={marker.id}
+                type="button"
+                className={`apna-character-marker${
+                  selectedCharacterId === marker.id ? ' is-selected' : ''
+                }`}
+                style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+                aria-label="Character marker"
+                aria-pressed={selectedCharacterId === marker.id}
+                onClick={() => setSelectedCharacterId(marker.id)}
+                data-testid={`character-marker-${marker.id}`}
+              >
+                <img
+                  src={marker.image}
+                  alt=""
+                  draggable="false"
+                  data-testid={`character-image-${marker.id}`}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
       </section>
     </main>
   );
