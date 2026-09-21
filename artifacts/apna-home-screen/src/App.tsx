@@ -4,7 +4,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
-import kalaGhodaMap from '@assets/kala-ghoda-map_1790011542618.png';
+import kalaGhodaMap from '@assets/Asset_1_1790012101847.svg';
 import {
   Route,
   Switch,

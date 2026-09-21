@@ -54,7 +54,6 @@ export default defineConfig({
         import.meta.dirname,
         '..',
         '..',
-        '.conversation',
         'attached_assets',
       ),
     },
