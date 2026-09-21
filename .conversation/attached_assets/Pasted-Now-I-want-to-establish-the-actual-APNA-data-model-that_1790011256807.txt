@@ -1,0 +1,97 @@
+Now I want to establish the actual APNA data model that the frontend will work with.
+
+Use the existing Supabase database as the source of truth.
+
+The important entities in APNA are:
+
+PARTICIPANT
+A person taking part in the APNA experience.
+
+A participant can have:
+- a participant ID
+- a session
+- a selected character
+- responses to questions
+- observations / memories associated with their contribution
+
+CHARACTER
+A visual character selected by a participant to represent them in the experience.
+
+The application already has a fixed set of character assets.
+
+Do NOT generate new character illustrations or invent character names.
+
+The frontend should use the actual character assets I provide later.
+
+LOCATION
+A geographic location within the Kala Ghoda area.
+
+A location can be an existing predefined location or a coordinate selected by a participant.
+
+The map needs to ultimately work with the real location data rather than invented coordinates.
+
+QUESTION
+A research question presented to participants.
+
+Questions are part of the existing APNA research experience and should come from the existing backend rather than being invented by the frontend.
+
+RESPONSE
+A participant's response to a question.
+
+OBSERVATION / MEMORY
+A contribution that can ultimately appear in the exploration experience.
+
+An observation can be associated with:
+- a participant
+- a character
+- a location
+- the participant's response/content
+
+The exploration experience should only display observations according to the existing APNA visibility/moderation rules.
+
+IMPORTANT:
+
+Do not assume the above descriptions correspond exactly to table names or columns.
+
+The existing database may use different names.
+
+When implementing the application, inspect and use the actual schema.
+
+DATA FLOW
+
+The conceptual flow is:
+
+Participant
+→ Session
+→ Questions
+→ Responses
+→ Observation / Memory
+→ Character + Location
+→ Exploration Map
+
+The exploration side of APNA should ultimately retrieve real observations from Supabase and represent them visually on the Kala Ghoda map.
+
+The contribution side should ultimately allow a participant to:
+→ select a character
+→ provide their response
+→ select a location
+→ create their observation
+→ save it to the existing backend
+
+IMPORTANT DEVELOPMENT RULES
+
+The existing database structure takes priority over this description.
+
+Do not change the database to fit this description.
+
+Do not create mock data once the real database is connected.
+
+Do not invent relationships that do not exist.
+
+Do not implement the complete flow yet.
+
+For now, acknowledge this data model and explain how you understand the relationship between the entities.
+
+Do not modify the database.
+Do not build the UI yet.
+Wait for my next instruction.

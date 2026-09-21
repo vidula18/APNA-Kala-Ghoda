@@ -1,0 +1,83 @@
+I am building a web application called APNA.
+
+Before you build anything, I want you to understand the product and its purpose.
+
+APNA is a participatory memory and storytelling experience based in Kala Ghoda, Mumbai.
+
+The application explores how people experience, remember, and form relationships with a place through their personal memories and observations.
+
+The central experience is a visual map of Kala Ghoda where people's memories are represented spatially and visually.
+
+A person should be able to enter APNA, explore the place, discover other people's memories, and eventually contribute their own.
+
+CORE EXPERIENCE
+
+The basic journey is:
+
+1. Enter APNA
+2. Explore a visual representation of Kala Ghoda
+3. Discover memories placed around the area
+4. Select a memory/person represented on the map
+5. Read their story or observation
+6. Add your own memory
+7. Choose where that memory belongs
+8. Choose a character that represents you
+9. Submit the memory
+10. Return to the map and see the contribution represented there
+
+APNA IS NOT:
+
+- a dashboard
+- a GIS management system
+- an analytics product
+- a data visualisation dashboard
+- a corporate SaaS application
+- a social media feed
+- a generic map application
+- an admin interface
+
+The map is an experiential element of the application.
+
+It should feel like exploring a collection of human memories embedded within a place.
+
+DESIGN INTENT
+
+The experience should feel:
+
+- spatial
+- calm
+- human
+- playful
+- editorial
+- intimate
+- minimal
+- visually distinctive
+
+The interface should NOT feel:
+
+- technical
+- corporate
+- data-heavy
+- administrative
+- futuristic
+- generic SaaS
+- like Google Maps
+- like a GIS tool
+
+IMPORTANT DEVELOPMENT APPROACH
+
+We will build APNA incrementally.
+
+Do not build the entire application now.
+
+Do not invent functionality that I have not described.
+
+Do not invent content, characters, names, statistics, categories, locations, or stories.
+
+Do not create a backend or database yet.
+
+Do not generate placeholder product concepts that change the nature of APNA.
+
+For now, simply understand the product.
+
+Wait for my next instruction before building anything.

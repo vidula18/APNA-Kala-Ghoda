@@ -1,0 +1,112 @@
+Now implement ONLY the APNA home screen based on the approved references.
+
+Do not build the rest of the application yet.
+
+PRIMARY REFERENCE
+
+Use the APNA home-screen reference image as the primary source of truth for the layout and composition.
+
+Use Happy Maps only as secondary inspiration for the feeling of map-based exploration.
+
+Use the provided APNA character assets exactly as provided.
+
+HOME SCREEN
+
+The home screen should establish:
+
+- APNA branding
+- the surrounding whitespace
+- the map as the central visual element
+- the correct scale and placement of the map
+- the top navigation
+- the overall visual hierarchy
+- the intended typography
+- the intended visual tone
+
+The map should feel like an important visual object within the page, not like a full-screen GIS application.
+
+The composition should remain close to the reference.
+
+IMPORTANT VISUAL RULES
+
+Do NOT:
+
+- create a dashboard
+- create a dark theme
+- make the map full-screen
+- add a sidebar
+- add a large control panel
+- add statistics
+- add a legend
+- add fictional locations
+- add fictional character names
+- add fictional stories
+- generate additional illustrations
+- generate replacement characters
+- add unnecessary navigation
+- add unnecessary UI controls
+- add map zoom controls
+- add filters yet
+- add database functionality yet
+- add authentication yet
+
+Do not use placeholder content that changes the visual composition.
+
+CHARACTERS
+
+The provided character assets are approved APNA assets.
+
+For this screen, characters should remain visual assets only.
+
+Do not make character selection functional yet.
+
+Do not connect characters to Supabase yet.
+
+Do not place invented characters or avatars on the map.
+
+MAP
+
+For now, use the provided APNA map asset/reference.
+
+Do not substitute it with:
+- Google Maps
+- Mapbox
+- OpenStreetMap tiles
+- a generic map library
+- a generated map
+- a dark GIS map
+
+The map will become interactive later.
+
+RESPONSIVE BEHAVIOUR
+
+The composition should remain intentional across desktop sizes.
+
+Do not simply stretch the map to fill the viewport.
+
+Preserve the visual proportions and whitespace of the reference.
+
+CODE QUALITY
+
+Use a clean component structure so that the following can be added later without rebuilding the home screen:
+
+- interactive map
+- character markers
+- memories
+- story cards
+- filtering
+- participant flow
+- memory submission
+- Supabase data
+
+For this step, the goal is ONLY:
+
+APNA HOME SCREEN
++
+APPROVED VISUAL ASSETS
++
+CORRECT COMPOSITION
+
+Do not proceed to the next feature after completing this screen.
+
+Show me the result first so I can review the visual fidelity before we continue.

@@ -1,0 +1,105 @@
+Now I want to establish the visual direction for APNA.
+
+I am attaching:
+1. The APNA home-screen reference image
+2. Happy Maps as an additional reference for map-based interaction and visual exploration
+
+IMPORTANT: THESE REFERENCES HAVE DIFFERENT ROLES.
+
+APNA HOME SCREEN REFERENCE
+This is the PRIMARY visual reference.
+
+It establishes the intended:
+- overall composition
+- scale of the map
+- whitespace
+- typography hierarchy
+- navigation placement
+- proportions
+- visual density
+- visual tone
+- relationship between the map and interface
+
+HAPPY MAPS
+Use Happy Maps as a SECONDARY REFERENCE.
+
+Study it specifically for ideas around:
+- how a map can feel personal and playful
+- how people can explore places through visual markers
+- how map-based storytelling can feel approachable rather than technical
+- how spatial exploration can work as an experience
+- how visual points/characters can exist within a place
+- how interaction with a map can feel human and discoverable
+
+DO NOT COPY HAPPY MAPS.
+
+Do not reproduce its:
+- branding
+- colours
+- typography
+- layouts
+- illustrations
+- icons
+- exact interactions
+- UI components
+- content
+
+The goal is to learn from its approach to map-based storytelling and exploration, not to recreate it.
+
+APNA'S OWN VISUAL REFERENCE ALWAYS TAKES PRIORITY.
+
+IMPORTANT:
+
+Do not redesign the APNA reference.
+
+Do not reinterpret APNA as a dashboard.
+
+Do not make the map fill the entire viewport.
+
+Do not turn the interface into a GIS application.
+
+Do not add a sidebar.
+
+Do not add dashboard panels.
+
+Do not add statistics.
+
+Do not add legends.
+
+Do not add fictional content.
+
+Do not invent character names.
+
+Do not generate substitute character illustrations.
+
+Do not replace the visual language of APNA with a generic SaaS design.
+
+The APNA reference should be treated as a design specification, not merely inspiration.
+
+For the first implementation, reproduce ONLY the home-screen composition shown in the APNA reference.
+
+At this stage:
+
+- no Supabase functionality
+- no authentication
+- no participant flow
+- no memory submission
+- no database operations
+- no map interactions
+- no character selection
+- no filtering functionality
+
+Only establish the visual home-screen foundation.
+
+Use clean, maintainable components so that we can add the actual APNA functionality later without rebuilding the interface.
+
+Before implementing anything, first explain:
+
+1. What you understand from the APNA reference
+2. What you are taking from Happy Maps
+3. What you will explicitly NOT take from Happy Maps
+4. The visual rules you will follow for APNA
+
+Do not implement the screen yet.
+
+Wait for my approval before writing the UI.

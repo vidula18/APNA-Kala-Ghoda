@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "APNA Home Screen"
+description = "A static home-screen foundation for APNA, a participatory memory and storytelling experience rooted in Kala Ghoda, Mumbai."
+version = "1.0.0"
+id = "artifacts/apna-home-screen"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21792
+
+[services.development]
+run = "pnpm --filter @workspace/apna-home-screen run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/apna-home-screen", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/apna-home-screen/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21792"
+BASE_PATH = "/"
