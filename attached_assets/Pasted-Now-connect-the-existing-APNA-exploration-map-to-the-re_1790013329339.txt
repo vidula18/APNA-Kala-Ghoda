@@ -1,0 +1,109 @@
+Now connect the existing APNA exploration map to the real data from Supabase.
+
+Use ONLY the actual database structure and field relationships you identified in the previous step.
+
+Do not invent table names, column names, relationships, or data.
+
+IMPORTANT:
+
+The existing Supabase database remains the source of truth.
+
+Do NOT:
+- create new tables
+- modify existing tables
+- create fake observations
+- create fake locations
+- create fake characters
+- insert test records
+- change the database schema
+
+REPLACE THE TEMPORARY DATA
+
+The four character markers currently displayed on the map were only temporary visual test data.
+
+Replace those temporary markers with real exploration-ready APNA observations from Supabase.
+
+For each observation that is allowed to appear in exploration:
+
+1. Retrieve its associated character.
+2. Retrieve its associated location.
+3. Retrieve the geographic position of that location.
+4. Display the corresponding APNA character asset at that position.
+
+CHARACTERS
+
+Use the existing four APNA character assets.
+
+Match the character shown on the map using the actual character identifier from the database.
+
+Do not display character IDs or database IDs to the user.
+
+LOCATIONS
+
+Use the actual geographic information from the existing APNA location data.
+
+Do not invent coordinates.
+
+Do not hard-code the temporary coordinates anymore.
+
+The character should be positioned relative to the actual Kala Ghoda map.
+
+VISIBILITY
+
+Only display observations that satisfy the existing APNA exploration/visibility rules identified in the previous backend inspection.
+
+Do not expose unpublished, incomplete, test, abandoned, or otherwise non-exploration-ready records.
+
+If the existing database contains test or abandoned sessions, do not display them as participant memories.
+
+MAP
+
+Keep the existing visual design exactly as it is.
+
+Do not redesign the map.
+
+Do not change its size or position.
+
+Do not add GIS controls.
+
+Do not add labels or legends.
+
+Do not add a dashboard.
+
+CHARACTER MARKERS
+
+The character illustration itself remains the visual marker.
+
+Do not surround it with:
+- circular pins
+- blue dots
+- location icons
+- numbered markers
+- generic avatar containers
+
+Keep the character proportions intact.
+
+EMPTY STATE
+
+If there are currently no exploration-ready observations available from Supabase, do not invent any.
+
+Simply keep the map empty and preserve the visual design.
+
+ERROR STATE
+
+If the Supabase query fails, show a subtle, user-appropriate error state rather than fake data.
+
+IMPORTANT
+
+The goal of this step is:
+
+REAL SUPABASE OBSERVATIONS
+→ REAL CHARACTER
+→ REAL LOCATION
+→ REAL MAP POSITION
+
+while preserving the existing APNA visual design.
+
+Do not implement story cards or memory submission yet.
+
+Show me the result after connecting the real data.
