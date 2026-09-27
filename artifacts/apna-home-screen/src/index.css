@@ -671,3 +671,133 @@
     transform: translateY(0);
   }
 }
+
+.apna-tool:not(:disabled) {
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 160ms ease, background-color 160ms ease;
+}
+
+.apna-tool:not(:disabled):hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.apna-tool:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.apna-tool-action {
+  background: #353b67;
+  color: #fdfcf9;
+  font-weight: 700;
+}
+
+.apna-temp-marker {
+  position: absolute;
+  z-index: 10;
+  display: block;
+  width: clamp(54px, 7.6vw, 78px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: apna-marker-bounce 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.apna-temp-marker img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.apna-temp-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px dashed #353b67;
+  animation: apna-spin-pulse 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes apna-spin-pulse {
+  0% {
+    transform: rotate(0deg) scale(0.96);
+    opacity: 0.7;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) scale(0.96);
+    opacity: 0.7;
+  }
+}
+
+@keyframes apna-marker-bounce {
+  0% {
+    transform: translate(-50%, -70%) scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.apna-place-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #fdfcf9;
+  border: 1px solid #dcdad0;
+  box-shadow: 0 10px 25px -5px rgba(53, 59, 103, 0.15);
+  font-family: var(--app-font-sans);
+  color: #353b67;
+  max-width: 90vw;
+  animation: apna-fade-in 240ms ease-out both;
+}
+
+@media (max-width: 640px) {
+  .apna-place-banner {
+    bottom: 16px;
+    padding: 8px 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+.apna-character-marker.is-newly-added::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2.5px solid #353b67;
+  animation: apna-welcome-pulse 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes apna-welcome-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.95;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
