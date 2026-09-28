@@ -125,34 +125,20 @@ export async function saveUserMemory(
 ): Promise<Memory> {
   const supabase = getSupabaseClient();
 
-  // 1. Create a participant record.
-  // Demographics are intentionally left empty for now.
-  const { data: participant, error: participantError } = await supabase
-    .from('participants')
-    .insert({})
-    .select('id')
-    .single();
+  const newMemory: Memory = {
+    ...memory,
+    id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    createdAt: new Date().toLocaleDateString('en-GB', {
+      month: 'long',
+      year: 'numeric',
+    }),
+    isInitial: false,
+    isNewlyAdded: true,
+  };
 
-  if (participantError || !participant) {
-    console.error('Failed to create participant:', participantError);
-    throw participantError || new Error('Failed to create participant');
-  }
-
-  // 2. Create a session for this contribution.
-  const { data: session, error: sessionError } = await supabase
-    .from('sessions')
-    .insert({
-      participant_id: participant.id,
-    })
-    .select('id')
-    .single();
-
-  if (sessionError || !session) {
-    console.error('Failed to create session:', sessionError);
-    throw sessionError || new Error('Failed to create session');
-  }
-
-  // 3. Find the active story question.
+  // --------------------------------------------------
+  // 1. Find the active story question
+  // --------------------------------------------------
   const { data: question, error: questionError } = await supabase
     .from('questions')
     .select('id')
@@ -162,11 +148,47 @@ export async function saveUserMemory(
     .single();
 
   if (questionError || !question) {
-    console.error('Failed to find story question:', questionError);
-    throw questionError || new Error('Active story question not found');
+    console.error('Question lookup failed:', questionError);
+    throw questionError || new Error('Could not find active story question.');
   }
 
-  // 4. Save the actual participant response.
+  // --------------------------------------------------
+  // 2. Create participant
+  // --------------------------------------------------
+  const { data: participant, error: participantError } = await supabase
+    .from('participants')
+    .insert({
+      age_group: null,
+      gender: null,
+      from_location: null,
+    })
+    .select('id')
+    .single();
+
+  if (participantError || !participant) {
+    console.error('Participant insert failed:', participantError);
+    throw participantError || new Error('Could not create participant.');
+  }
+
+  // --------------------------------------------------
+  // 3. Create session
+  // --------------------------------------------------
+  const { data: session, error: sessionError } = await supabase
+    .from('sessions')
+    .insert({
+      participant_id: participant.id,
+    })
+    .select('id')
+    .single();
+
+  if (sessionError || !session) {
+    console.error('Session insert failed:', sessionError);
+    throw sessionError || new Error('Could not create session.');
+  }
+
+  // --------------------------------------------------
+  // 4. Save response
+  // --------------------------------------------------
   const { data: response, error: responseError } = await supabase
     .from('responses')
     .insert({
@@ -179,11 +201,13 @@ export async function saveUserMemory(
     .single();
 
   if (responseError || !response) {
-    console.error('Failed to save response:', responseError);
-    throw responseError || new Error('Failed to save response');
+    console.error('Response insert failed:', responseError);
+    throw responseError || new Error('Could not save response.');
   }
 
-  // 5. Convert the map percentage into approximate Kala Ghoda coordinates.
+  // --------------------------------------------------
+  // 5. Convert map position to coordinates
+  // --------------------------------------------------
   const longitude =
     72.8300 + (memory.x / 100) * (72.8360 - 72.8300);
 
@@ -191,7 +215,9 @@ export async function saveUserMemory(
     18.9260 +
     ((100 - memory.y) / 100) * (18.9330 - 18.9260);
 
-  // 6. Create the location.
+  // --------------------------------------------------
+  // 6. Save location
+  // --------------------------------------------------
   const { data: location, error: locationError } = await supabase
     .from('locations')
     .insert({
@@ -204,11 +230,13 @@ export async function saveUserMemory(
     .single();
 
   if (locationError || !location) {
-    console.error('Failed to save location:', locationError);
-    throw locationError || new Error('Failed to save location');
+    console.error('Location insert failed:', locationError);
+    throw locationError || new Error('Could not save location.');
   }
 
-  // 7. Connect the response + location into an observation.
+  // --------------------------------------------------
+  // 7. Save observation linking everything
+  // --------------------------------------------------
   const { error: observationError } = await supabase
     .from('observations')
     .insert({
@@ -220,32 +248,23 @@ export async function saveUserMemory(
     });
 
   if (observationError) {
-    console.error('Failed to save observation:', observationError);
+    console.error('Observation insert failed:', observationError);
     throw observationError;
   }
 
-  // 8. Create the local Memory object used immediately by the map.
-  const newMemory: Memory = {
-    ...memory,
-    id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    createdAt: new Date().toLocaleDateString('en-GB', {
-      month: 'long',
-      year: 'numeric',
-    }),
-    isInitial: false,
-    isNewlyAdded: true,
-  };
-
-  // Keep local storage so the new marker can appear immediately.
+  // --------------------------------------------------
+  // 8. Save locally so the marker immediately appears
+  // --------------------------------------------------
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const existing = raw ? (JSON.parse(raw) as Memory[]) : [];
+
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify([newMemory, ...existing])
     );
   } catch (err) {
-    console.error('Failed to save memory to localStorage', err);
+    console.error('Local memory save failed:', err);
   }
 
   return newMemory;
