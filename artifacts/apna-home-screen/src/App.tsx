@@ -11,8 +11,6 @@ import {
   fetchRemoteMemories,
   saveUserMemory,
 } from '@/lib/memory-store';
-
-import { saveResponseToSupabase } from '@/lib/save-response';
 import { StoryCard } from '@/components/StoryCard';
 import { InfoModal } from '@/components/InfoModal';
 import { FilterModal } from '@/components/FilterModal';
@@ -55,7 +53,9 @@ function Home() {
         if (remotes.length > 0) {
           setMemories((prev) => {
             const existingIds = new Set(prev.map((m) => m.id));
-            const newMemories = remotes.filter((r) => !existingIds.has(r.id));
+            const newMemories = remotes.filter(
+              (r) => !existingIds.has(r.id)
+            );
             return [...prev, ...newMemories];
           });
         }
@@ -83,10 +83,12 @@ function Home() {
   // Start contribution flow: repeat contributor jumps straight to place selection
   const handleStartContribution = () => {
     setSelectedMemoryId(null);
+
     if (hasSelectedCharacter) {
       if (!tempLocation) {
         setTempLocation({ x: 50, y: 50 });
       }
+
       setFlowStep('choose-place');
     } else {
       setFlowStep('choose-character');
@@ -97,55 +99,48 @@ function Home() {
   const handleCharacterSelected = (charId: number) => {
     setParticipantCharacterId(charId);
     setHasSelectedCharacter(true);
+
     if (!tempLocation) {
       setTempLocation({ x: 50, y: 50 });
     }
+
     setFlowStep('choose-place');
   };
 
   // When story question is submitted from StampQuestionFlow
- const created = saveUserMemory({
-  characterId: participantCharacterId,
-  x: tempLocation.x,
-  y: tempLocation.y,
-  story,
-  placeName,
-  stampColor,
-});
-  saveResponseToSupabase({
-  story,
-  placeName,
-  x: tempLocation.x,
-  y: tempLocation.y,
-  characterId: participantCharacterId,
-});
+  const handleStampStorySubmit = ({
+    story,
+    placeName,
+    stampColor,
+  }: {
+    story: string;
+    placeName?: string;
+    stampColor: StampColor;
+  }) => {
+    if (!tempLocation) return;
 
-setMemories(getStoredMemories());
+    // Save locally FIRST.
+    // This keeps the map working immediately and does not depend on Supabase.
+    const created = saveUserMemory({
+      characterId: participantCharacterId,
+      x: tempLocation.x,
+      y: tempLocation.y,
+      story,
+      placeName,
+      stampColor,
+    });
 
-// Supabase runs separately.
-// DO NOT await this.
-void saveMemoryToSupabase(created);
-
-setFlowStep('none');
-setTempLocation(null);
-setNewlyAddedMemoryId(created.id);
-
-setToastNotification(
-  'Your memory is now part of Kala Ghoda. Tap your marker to view it.'
-);
-
-setTimeout(() => {
-  setNewlyAddedMemoryId(null);
-}, 3000);
-
-    // Update memory list
+    // Update memory list immediately
     setMemories(getStoredMemories());
     setFlowStep('none');
     setTempLocation(null);
     setNewlyAddedMemoryId(created.id);
 
-    // Show celebratory feedback letting user see their memory now on Kala Ghoda
-    setToastNotification('Your memory is now part of Kala Ghoda. Tap your marker to view it.');
+    // Show feedback
+    setToastNotification(
+      'Your memory is now part of Kala Ghoda. Tap your marker to view it.'
+    );
+
     setTimeout(() => {
       setToastNotification(null);
     }, 5500);
@@ -156,7 +151,9 @@ setTimeout(() => {
     ? memories.filter((m) => m.characterId === selectedFilter)
     : memories;
 
-  const activeMemory = memories.find((m) => m.id === selectedMemoryId);
+  const activeMemory = memories.find(
+    (m) => m.id === selectedMemoryId
+  );
 
   return (
     <main className="apna-home" data-testid="home-screen">
@@ -173,6 +170,7 @@ setTimeout(() => {
         <h1 className="apna-wordmark" data-testid="text-apna-wordmark">
           Apna
         </h1>
+
         <div className="apna-tools" data-testid="home-tools">
           <button
             type="button"
@@ -183,15 +181,21 @@ setTimeout(() => {
           >
             Info
           </button>
+
           <button
             type="button"
-            className={`apna-tool ${selectedFilter !== null ? 'ring-2 ring-[#353b67]' : ''}`}
+            className={`apna-tool ${
+              selectedFilter !== null ? 'ring-2 ring-[#353b67]' : ''
+            }`}
             onClick={() => setIsFilterOpen(true)}
             aria-label="Filter memories"
             data-testid="button-filter"
           >
-            {selectedFilter ? `Filter (${displayedMemories.length})` : 'Filter'}
+            {selectedFilter
+              ? `Filter (${displayedMemories.length})`
+              : 'Filter'}
           </button>
+
           <button
             type="button"
             className="apna-tool apna-tool-action inline-flex items-center justify-center gap-1 cursor-pointer"
@@ -207,7 +211,9 @@ setTimeout(() => {
 
       {/* Map Stage */}
       <section
-        className={`apna-map-stage ${flowStep === 'choose-place' ? 'cursor-crosshair' : ''}`}
+        className={`apna-map-stage ${
+          flowStep === 'choose-place' ? 'cursor-crosshair' : ''
+        }`}
         aria-label="Kala Ghoda map"
       >
         <div
@@ -224,7 +230,10 @@ setTimeout(() => {
           />
 
           {/* Character Layer for existing / saved memories */}
-          <div className="apna-character-layer" aria-label="Character markers">
+          <div
+            className="apna-character-layer"
+            aria-label="Character markers"
+          >
             {displayedMemories.map((memory) => {
               const isSelected = selectedMemoryId === memory.id;
               const isNewlyAdded = newlyAddedMemoryId === memory.id;
@@ -240,7 +249,8 @@ setTimeout(() => {
                   style={{
                     left: `${memory.x}%`,
                     top: `${memory.y}%`,
-                    opacity: flowStep === 'choose-place' ? 0.35 : 1,
+                    opacity:
+                      flowStep === 'choose-place' ? 0.35 : 1,
                   }}
                   aria-label={
                     memory.placeName
@@ -250,8 +260,10 @@ setTimeout(() => {
                   aria-pressed={isSelected}
                   onClick={(e) => {
                     if (flowStep === 'choose-place') return;
+
                     e.stopPropagation();
                     setSelectedMemoryId(memory.id);
+
                     if (newlyAddedMemoryId === memory.id) {
                       setNewlyAddedMemoryId(null);
                     }
@@ -278,6 +290,7 @@ setTimeout(() => {
                 }}
               >
                 <div className="apna-temp-pulse" />
+
                 <img
                   src={getCharacterImage(participantCharacterId)}
                   alt="Your temporary position on Kala Ghoda map"
@@ -291,7 +304,11 @@ setTimeout(() => {
 
       {/* Place Selection Floating Guidance Bar */}
       {flowStep === 'choose-place' && (
-        <aside className="apna-place-banner" role="status" aria-live="polite">
+        <aside
+          className="apna-place-banner"
+          role="status"
+          aria-live="polite"
+        >
           <button
             type="button"
             onClick={() => setFlowStep('choose-character')}
@@ -301,7 +318,9 @@ setTimeout(() => {
             <span>Change figure</span>
           </button>
 
-          <span className="hidden sm:inline text-xs text-[#353b67]/40">•</span>
+          <span className="hidden sm:inline text-xs text-[#353b67]/40">
+            •
+          </span>
 
           <span className="text-xs text-[#353b67] font-medium">
             Tap anywhere on the map to place your memory
@@ -332,29 +351,39 @@ setTimeout(() => {
       )}
 
       {/* Empty State when no memories exist for selected filter */}
-      {flowStep === 'none' && !selectedMemoryId && selectedFilter !== null && displayedMemories.length === 0 && (
-        <aside className="apna-place-banner" role="status">
-          <span className="text-xs text-[#353b67] font-medium">
-            No memories found for this figure yet.
-          </span>
-          <button
-            type="button"
-            onClick={() => setSelectedFilter(null)}
-            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-[#353b67] text-[#fdfcf9] hover:opacity-90 shadow-sm cursor-pointer"
+      {flowStep === 'none' &&
+        !selectedMemoryId &&
+        selectedFilter !== null &&
+        displayedMemories.length === 0 && (
+          <aside
+            className="apna-place-banner"
+            role="status"
           >
-            <span>Show all</span>
-          </button>
-        </aside>
-      )}
+            <span className="text-xs text-[#353b67] font-medium">
+              No memories found for this figure yet.
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setSelectedFilter(null)}
+              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-[#353b67] text-[#fdfcf9] hover:opacity-90 shadow-sm cursor-pointer"
+            >
+              <span>Show all</span>
+            </button>
+          </aside>
+        )}
 
       {/* Quiet hint footer during idle exploration */}
-      {flowStep === 'none' && !selectedMemoryId && displayedMemories.length > 0 && (
-        <footer className="fixed bottom-4 left-1/2 -translate-x-1/2 pointer-events-none text-center px-4">
-          <p className="text-[11px] sm:text-xs text-[#353b67]/60 font-sans tracking-wide">
-            Tap any character to read their memory • Tap &ldquo;+ Add Memory&rdquo; to contribute
-          </p>
-        </footer>
-      )}
+      {flowStep === 'none' &&
+        !selectedMemoryId &&
+        displayedMemories.length > 0 && (
+          <footer className="fixed bottom-4 left-1/2 -translate-x-1/2 pointer-events-none text-center px-4">
+            <p className="text-[11px] sm:text-xs text-[#353b67]/60 font-sans tracking-wide">
+              Tap any character to read their memory • Tap
+              &ldquo;+ Add Memory&rdquo; to contribute
+            </p>
+          </footer>
+        )}
 
       {/* Story Card Modal on exact Response PNG stamp when exploring */}
       {activeMemory && (
@@ -388,18 +417,31 @@ setTimeout(() => {
         initialCharacterId={participantCharacterId}
       />
 
-      {/* Step 3 & 4: Question & Response Stamp Flow using exact PNG assets */}
+      {/* Step 3 & 4: Question & Response Stamp Flow */}
       {tempLocation && (
         <StampQuestionFlow
-          isOpen={flowStep === 'question-stamp' || flowStep === 'write-response'}
-          step={flowStep === 'write-response' ? 'write-response' : 'question-stamp'}
+          isOpen={
+            flowStep === 'question-stamp' ||
+            flowStep === 'write-response'
+          }
+          step={
+            flowStep === 'write-response'
+              ? 'write-response'
+              : 'question-stamp'
+          }
           onClose={() => {
             setFlowStep('none');
             setTempLocation(null);
           }}
-          onBackToLocation={() => setFlowStep('choose-place')}
-          onGoToWrite={() => setFlowStep('write-response')}
-          onBackToQuestion={() => setFlowStep('question-stamp')}
+          onBackToLocation={() =>
+            setFlowStep('choose-place')
+          }
+          onGoToWrite={() =>
+            setFlowStep('write-response')
+          }
+          onBackToQuestion={() =>
+            setFlowStep('question-stamp')
+          }
           onSubmit={handleStampStorySubmit}
           characterId={participantCharacterId}
           location={tempLocation}
@@ -420,18 +462,30 @@ function Router() {
   );
 }
 
-function RoutedErrorBoundary({ children }: { children: ReactNode }) {
+function RoutedErrorBoundary({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
+
+  return (
+    <ErrorBoundary resetKey={location}>
+      {children}
+    </ErrorBoundary>
+  );
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+        <WouterRouter
+          base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+        >
           <Router />
         </WouterRouter>
+
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
