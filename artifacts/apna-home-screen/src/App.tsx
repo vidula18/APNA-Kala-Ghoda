@@ -10,8 +10,9 @@ import {
   getStoredMemories,
   fetchRemoteMemories,
   saveUserMemory,
-  saveMemoryToSupabase,
 } from '@/lib/memory-store';
+
+import { saveResponseToSupabase } from '@/lib/save-response';
 import { StoryCard } from '@/components/StoryCard';
 import { InfoModal } from '@/components/InfoModal';
 import { FilterModal } from '@/components/FilterModal';
