@@ -108,16 +108,53 @@ function Home() {
   };
 
   // When story question is submitted from StampQuestionFlow
-  const handleStampStorySubmit = ({
+const handleStampStorySubmit = ({
+  story,
+  placeName,
+  stampColor,
+}: {
+  story: string;
+  placeName?: string;
+  stampColor: StampColor;
+}) => {
+  if (!tempLocation) return;
+
+  // SAVE LOCALLY FIRST
+  // The map updates immediately and does not wait for Supabase.
+  const created = saveUserMemory({
+    characterId: participantCharacterId,
+    x: tempLocation.x,
+    y: tempLocation.y,
     story,
     placeName,
     stampColor,
-  }: {
-    story: string;
-    placeName?: string;
-    stampColor: StampColor;
-  }) => {
-    if (!tempLocation) return;
+  });
+
+  // Update the map immediately
+  setMemories(getStoredMemories());
+  setFlowStep('none');
+  setTempLocation(null);
+  setNewlyAddedMemoryId(created.id);
+
+  // Show confirmation
+  setToastNotification(
+    'Your memory is now part of Kala Ghoda. Tap your marker to view it.'
+  );
+
+  setTimeout(() => {
+    setToastNotification(null);
+  }, 5500);
+
+  // SAVE TO SUPABASE IN THE BACKGROUND
+  // Do not await this — Supabase must never block the map.
+  void saveResponseToSupabase({
+    story,
+    placeName,
+    x: created.x,
+    y: created.y,
+    characterId: participantCharacterId,
+  });
+};
 
     // Save locally FIRST.
     // This keeps the map working immediately and does not depend on Supabase.
