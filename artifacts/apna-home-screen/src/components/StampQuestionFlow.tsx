@@ -40,13 +40,18 @@ export function StampQuestionFlow({
   const characterImg = getCharacterImage(characterId);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!story.trim()) {
-      setError('Please write a memory on the card before adding to the map.');
-      return;
-    }
-    setError('');
-    onSubmit({
+  e.preventDefault();
+
+  console.log('ADD TO MAP BUTTON CLICKED');
+
+  if (!story.trim()) {
+    setError('Please write a memory on the card before adding to the map.');
+    return;
+  }
+
+  setError('Saving...');
+
+  onSubmit({
       story: story.trim(),
       placeName: placeName.trim() || undefined,
       stampColor: selectedColor,
