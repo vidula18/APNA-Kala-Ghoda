@@ -103,25 +103,32 @@ function Home() {
   };
 
   // When story question is submitted from StampQuestionFlow
-  const handleStampStorySubmit = async ({
-    story,
-    placeName,
-    stampColor,
-  }: {
-    story: string;
-    placeName?: string;
-    stampColor: StampColor;
-  }) => {
-    if (!tempLocation) return;
+ const created = saveUserMemory({
+  characterId: participantCharacterId,
+  x: tempLocation.x,
+  y: tempLocation.y,
+  story,
+  placeName,
+  stampColor,
+});
 
-    const created = await saveUserMemory({
-      characterId: participantCharacterId,
-      x: tempLocation.x,
-      y: tempLocation.y,
-      story,
-      placeName,
-      stampColor,
-    });
+setMemories(getStoredMemories());
+
+// Supabase runs separately.
+// DO NOT await this.
+void saveMemoryToSupabase(created);
+
+setFlowStep('none');
+setTempLocation(null);
+setNewlyAddedMemoryId(created.id);
+
+setToastNotification(
+  'Your memory is now part of Kala Ghoda. Tap your marker to view it.'
+);
+
+setTimeout(() => {
+  setNewlyAddedMemoryId(null);
+}, 3000);
 
     // Update memory list
     setMemories(getStoredMemories());
