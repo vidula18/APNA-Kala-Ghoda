@@ -97,18 +97,13 @@ export async function fetchRemoteMemories(): Promise<Memory[]> {
         ? obs.responses[0]
         : obs.responses;
 
-      // Extract character.
-      // The current participants table does not yet contain
-      // character_id, so default to character 1 when unavailable.
       const charId =
         part && part.character_id ? Number(part.character_id) : 1;
 
-      // Calculate map percentages from latitude/longitude.
       let posX = 50;
       let posY = 50;
 
       if (loc && loc.latitude && loc.longitude) {
-        // Kala Ghoda bounding box.
         posX = Math.max(
           8,
           Math.min(
@@ -135,7 +130,6 @@ export async function fetchRemoteMemories(): Promise<Memory[]> {
         y: Math.round(posY),
         placeName: loc ? loc.name : 'Kala Ghoda',
 
-        // The responses table uses answer_text.
         story:
           resp?.answer_text ||
           resp?.response_text ||
@@ -170,16 +164,12 @@ export async function fetchRemoteMemories(): Promise<Memory[]> {
 }
 
 /**
- * Saves a participant memory locally.
+ * LOCAL SAVE
  *
- * IMPORTANT:
- * The local save is intentionally synchronous.
- * The APNA map must update immediately after the participant
- * clicks "Add to Kala Ghoda Map".
+ * This function MUST remain synchronous.
  *
- * Supabase persistence will be handled separately so that a
- * database failure cannot prevent the character marker from
- * appearing on the map.
+ * The map depends on this function returning immediately.
+ * Never put Supabase/database/network operations in here.
  */
 export function saveUserMemory(
   memory: Omit<Memory, 'id' | 'createdAt'>
@@ -221,4 +211,212 @@ export function saveUserMemory(
   }
 
   return newMemory;
+}
+
+/**
+ * SUPABASE BACKGROUND SAVE
+ *
+ * This is deliberately separate from saveUserMemory().
+ *
+ * IMPORTANT:
+ * The caller must NOT await this function from the map flow.
+ *
+ * If Supabase fails, the local memory has already been saved
+ * and the map has already been updated.
+ */
+export async function saveMemoryToSupabase(
+  memory: Memory
+): Promise<void> {
+  try {
+    const supabase = getSupabaseClient();
+
+    /*
+     * ---------------------------------------------------------
+     * 1. Find the active APNA question
+     * ---------------------------------------------------------
+     */
+    const { data: question, error: questionError } =
+      await supabase
+        .from('questions')
+        .select('id')
+        .eq('active', true)
+        .limit(1)
+        .maybeSingle();
+
+    if (questionError) {
+      throw new Error(
+        `Question lookup failed: ${questionError.message}`
+      );
+    }
+
+    if (!question?.id) {
+      throw new Error(
+        'No active question found in Supabase.'
+      );
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * 2. Create participant
+     * ---------------------------------------------------------
+     *
+     * We intentionally do not send character_id because the
+     * current participants table does not contain that column.
+     */
+    const { data: participant, error: participantError } =
+      await supabase
+        .from('participants')
+        .insert({})
+        .select('id')
+        .single();
+
+    if (participantError) {
+      throw new Error(
+        `Participant insert failed: ${participantError.message}`
+      );
+    }
+
+    if (!participant?.id) {
+      throw new Error(
+        'Participant was created but no participant ID was returned.'
+      );
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * 3. Create session
+     * ---------------------------------------------------------
+     */
+    const { data: session, error: sessionError } =
+      await supabase
+        .from('sessions')
+        .insert({
+          participant_id: participant.id,
+        })
+        .select('id')
+        .single();
+
+    if (sessionError) {
+      throw new Error(
+        `Session insert failed: ${sessionError.message}`
+      );
+    }
+
+    if (!session?.id) {
+      throw new Error(
+        'Session was created but no session ID was returned.'
+      );
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * 4. Save the actual answer
+     * ---------------------------------------------------------
+     */
+    const { data: response, error: responseError } =
+      await supabase
+        .from('responses')
+        .insert({
+          participant_id: participant.id,
+          session_id: session.id,
+          question_id: question.id,
+          answer_text: memory.story,
+        })
+        .select('id')
+        .single();
+
+    if (responseError) {
+      throw new Error(
+        `Response insert failed: ${responseError.message}`
+      );
+    }
+
+    if (!response?.id) {
+      throw new Error(
+        'Response was created but no response ID was returned.'
+      );
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * 5. Convert map position back into coordinates
+     * ---------------------------------------------------------
+     *
+     * This uses the same Kala Ghoda bounds already used by
+     * fetchRemoteMemories().
+     */
+    const longitude =
+      72.83 + (memory.x / 100) * (72.836 - 72.83);
+
+    const latitude =
+      18.926 +
+      ((100 - memory.y) / 100) * (18.933 - 18.926);
+
+    /*
+     * ---------------------------------------------------------
+     * 6. Create location
+     * ---------------------------------------------------------
+     */
+    const { data: location, error: locationError } =
+      await supabase
+        .from('locations')
+        .insert({
+          name: memory.placeName || 'Kala Ghoda',
+          latitude,
+          longitude,
+          source: 'participant',
+        })
+        .select('id')
+        .single();
+
+    if (locationError) {
+      throw new Error(
+        `Location insert failed: ${locationError.message}`
+      );
+    }
+
+    if (!location?.id) {
+      throw new Error(
+        'Location was created but no location ID was returned.'
+      );
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * 7. Link everything through observations
+     * ---------------------------------------------------------
+     */
+    const { error: observationError } =
+      await supabase
+        .from('observations')
+        .insert({
+          participant_id: participant.id,
+          session_id: session.id,
+          location_id: location.id,
+          response_id: response.id,
+          story_text: memory.story,
+        });
+
+    if (observationError) {
+      throw new Error(
+        `Observation insert failed: ${observationError.message}`
+      );
+    }
+
+    console.log(
+      'APNA memory successfully saved to Supabase:',
+      memory.id
+    );
+  } catch (error) {
+    /*
+     * CRITICAL:
+     *
+     * Never throw this error back into the map interaction.
+     * The local memory is already safe.
+     */
+    console.error(
+      'APNA Supabase background save failed:',
+      error
+    );
+  }
 }
