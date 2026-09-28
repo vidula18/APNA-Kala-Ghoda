@@ -6,7 +6,12 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import kalaGhodaMap from '@assets/Asset_1_1790012101847.svg';
 import { getCharacterImage } from '@/lib/characters';
-import { getStoredMemories, fetchRemoteMemories, saveUserMemory } from '@/lib/memory-store';
+import {
+  getStoredMemories,
+  fetchRemoteMemories,
+  saveUserMemory,
+  saveMemoryToSupabase,
+} from '@/lib/memory-store';
 import { StoryCard } from '@/components/StoryCard';
 import { InfoModal } from '@/components/InfoModal';
 import { FilterModal } from '@/components/FilterModal';
