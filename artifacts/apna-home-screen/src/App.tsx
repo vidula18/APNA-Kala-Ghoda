@@ -112,6 +112,13 @@ function Home() {
   placeName,
   stampColor,
 });
+  saveResponseToSupabase({
+  story,
+  placeName,
+  x: tempLocation.x,
+  y: tempLocation.y,
+  characterId: participantCharacterId,
+});
 
 setMemories(getStoredMemories());
 
