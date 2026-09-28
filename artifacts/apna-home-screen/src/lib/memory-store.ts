@@ -61,8 +61,13 @@ const STORAGE_KEY = 'apna_participatory_memories_v2';
 export function getStoredMemories(): Memory[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return INITIAL_MEMORIES;
+
+    if (!raw) {
+      return INITIAL_MEMORIES;
+    }
+
     const userMemories = JSON.parse(raw) as Memory[];
+
     return [...INITIAL_MEMORIES, ...userMemories];
   } catch {
     return INITIAL_MEMORIES;
@@ -72,199 +77,147 @@ export function getStoredMemories(): Memory[] {
 export async function fetchRemoteMemories(): Promise<Memory[]> {
   try {
     const supabase = getSupabaseClient();
+
     const { data: observations, error } = await supabase
       .from('observations')
-      .select('id, created_at, session_id, participant_id, location_id, locations(*), responses(*), participants(*)');
+      .select(
+        'id, created_at, session_id, participant_id, location_id, locations(*), responses(*), participants(*)'
+      );
 
     if (error || !observations || observations.length === 0) {
       return [];
     }
 
     const remoteMemories: Memory[] = [];
+
     for (const obs of observations as any[]) {
       const loc = obs.locations;
       const part = obs.participants;
-      const resp = Array.isArray(obs.responses) ? obs.responses[0] : obs.responses;
+      const resp = Array.isArray(obs.responses)
+        ? obs.responses[0]
+        : obs.responses;
 
-      // Extract character
-      const charId = (part && part.character_id) ? Number(part.character_id) : 1;
+      // Extract character.
+      // The current participants table does not yet contain
+      // character_id, so default to character 1 when unavailable.
+      const charId =
+        part && part.character_id ? Number(part.character_id) : 1;
 
-      // Calculate map percentages from lat/long if available
+      // Calculate map percentages from latitude/longitude.
       let posX = 50;
       let posY = 50;
+
       if (loc && loc.latitude && loc.longitude) {
-        // Kala Ghoda bounding box
-        posX = Math.max(8, Math.min(92, ((loc.longitude - 72.8300) / (72.8360 - 72.8300)) * 100));
-        posY = Math.max(8, Math.min(92, 100 - (((loc.latitude - 18.9260) / (18.9330 - 18.9260)) * 100)));
+        // Kala Ghoda bounding box.
+        posX = Math.max(
+          8,
+          Math.min(
+            92,
+            ((loc.longitude - 72.83) / (72.836 - 72.83)) * 100
+          )
+        );
+
+        posY = Math.max(
+          8,
+          Math.min(
+            92,
+            100 -
+              ((loc.latitude - 18.926) / (18.933 - 18.926)) * 100
+          )
+        );
       }
 
       remoteMemories.push({
         id: `supabase-${obs.id}`,
-        characterId: (charId >= 1 && charId <= 4) ? charId : 1,
+        characterId:
+          charId >= 1 && charId <= 4 ? charId : 1,
         x: Math.round(posX),
         y: Math.round(posY),
         placeName: loc ? loc.name : 'Kala Ghoda',
-        story: resp?.answer_text || resp?.response_text || resp?.story || resp?.text || 'A memory shared at this place in Kala Ghoda.',
-        createdAt: new Date(obs.created_at).toLocaleDateString('en-GB', {
-          month: 'long',
-          year: 'numeric',
-        }),
+
+        // The responses table uses answer_text.
+        story:
+          resp?.answer_text ||
+          resp?.response_text ||
+          resp?.story ||
+          resp?.text ||
+          'A memory shared at this place in Kala Ghoda.',
+
+        createdAt: new Date(obs.created_at).toLocaleDateString(
+          'en-GB',
+          {
+            month: 'long',
+            year: 'numeric',
+          }
+        ),
+
         isInitial: false,
-        stampColor: charId === 2 ? 'magenta' : charId === 3 ? 'lime' : 'blue',
+
+        stampColor:
+          charId === 2
+            ? 'magenta'
+            : charId === 3
+              ? 'lime'
+              : 'blue',
       });
     }
 
     return remoteMemories;
-  } catch {
+  } catch (error) {
+    console.error('Failed to fetch remote memories:', error);
     return [];
   }
 }
 
-export async function saveUserMemory(
+/**
+ * Saves a participant memory locally.
+ *
+ * IMPORTANT:
+ * The local save is intentionally synchronous.
+ * The APNA map must update immediately after the participant
+ * clicks "Add to Kala Ghoda Map".
+ *
+ * Supabase persistence will be handled separately so that a
+ * database failure cannot prevent the character marker from
+ * appearing on the map.
+ */
+export function saveUserMemory(
   memory: Omit<Memory, 'id' | 'createdAt'>
-): Promise<Memory> {
-  const supabase = getSupabaseClient();
-
+): Memory {
   const newMemory: Memory = {
     ...memory,
-    id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+
+    id: `mem-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 7)}`,
+
     createdAt: new Date().toLocaleDateString('en-GB', {
       month: 'long',
       year: 'numeric',
     }),
+
     isInitial: false,
     isNewlyAdded: true,
   };
 
-  // --------------------------------------------------
-  // 1. Find the active story question
-  // --------------------------------------------------
-  const { data: question, error: questionError } = await supabase
-    .from('questions')
-    .select('id')
-    .eq('question_key', 'place_story')
-    .eq('active', true)
-    .limit(1)
-    .single();
-
-  if (questionError || !question) {
-    console.error('Question lookup failed:', questionError);
-    throw questionError || new Error('Could not find active story question.');
-  }
-
-  // --------------------------------------------------
-  // 2. Create participant
-  // --------------------------------------------------
-  const { data: participant, error: participantError } = await supabase
-    .from('participants')
-    .insert({
-      age_group: null,
-      gender: null,
-      from_location: null,
-    })
-    .select('id')
-    .single();
-
-  if (participantError || !participant) {
-    console.error('Participant insert failed:', participantError);
-    throw participantError || new Error('Could not create participant.');
-  }
-
-  // --------------------------------------------------
-  // 3. Create session
-  // --------------------------------------------------
-  const { data: session, error: sessionError } = await supabase
-    .from('sessions')
-    .insert({
-      participant_id: participant.id,
-    })
-    .select('id')
-    .single();
-
-  if (sessionError || !session) {
-    console.error('Session insert failed:', sessionError);
-    throw sessionError || new Error('Could not create session.');
-  }
-
-  // --------------------------------------------------
-  // 4. Save response
-  // --------------------------------------------------
-  const { data: response, error: responseError } = await supabase
-    .from('responses')
-    .insert({
-      participant_id: participant.id,
-      session_id: session.id,
-      question_id: question.id,
-      answer_text: memory.story,
-    })
-    .select('id')
-    .single();
-
-  if (responseError || !response) {
-    console.error('Response insert failed:', responseError);
-    throw responseError || new Error('Could not save response.');
-  }
-
-  // --------------------------------------------------
-  // 5. Convert map position to coordinates
-  // --------------------------------------------------
-  const longitude =
-    72.8300 + (memory.x / 100) * (72.8360 - 72.8300);
-
-  const latitude =
-    18.9260 +
-    ((100 - memory.y) / 100) * (18.9330 - 18.9260);
-
-  // --------------------------------------------------
-  // 6. Save location
-  // --------------------------------------------------
-  const { data: location, error: locationError } = await supabase
-    .from('locations')
-    .insert({
-      name: memory.placeName || 'Kala Ghoda',
-      latitude,
-      longitude,
-      source: 'participant',
-    })
-    .select('id')
-    .single();
-
-  if (locationError || !location) {
-    console.error('Location insert failed:', locationError);
-    throw locationError || new Error('Could not save location.');
-  }
-
-  // --------------------------------------------------
-  // 7. Save observation linking everything
-  // --------------------------------------------------
-  const { error: observationError } = await supabase
-    .from('observations')
-    .insert({
-      participant_id: participant.id,
-      session_id: session.id,
-      location_id: location.id,
-      response_id: response.id,
-      story_text: memory.story,
-    });
-
-  if (observationError) {
-    console.error('Observation insert failed:', observationError);
-    throw observationError;
-  }
-
-  // --------------------------------------------------
-  // 8. Save locally so the marker immediately appears
-  // --------------------------------------------------
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    const existing = raw ? (JSON.parse(raw) as Memory[]) : [];
+
+    const existing = raw
+      ? (JSON.parse(raw) as Memory[])
+      : [];
+
+    const updated = [newMemory, ...existing];
 
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify([newMemory, ...existing])
+      JSON.stringify(updated)
     );
   } catch (err) {
-    console.error('Local memory save failed:', err);
+    console.error(
+      'Failed to save memory to localStorage:',
+      err
+    );
   }
 
   return newMemory;
