@@ -98,7 +98,7 @@ function Home() {
   };
 
   // When story question is submitted from StampQuestionFlow
-  const handleStampStorySubmit = ({
+  const handleStampStorySubmit = async ({
     story,
     placeName,
     stampColor,
@@ -109,7 +109,7 @@ function Home() {
   }) => {
     if (!tempLocation) return;
 
-    const created = saveUserMemory({
+    const created = await saveUserMemory({
       characterId: participantCharacterId,
       x: tempLocation.x,
       y: tempLocation.y,
