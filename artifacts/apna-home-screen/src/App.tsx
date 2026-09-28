@@ -119,6 +119,37 @@ const handleStampStorySubmit = ({
 }) => {
   if (!tempLocation) return;
 
+  const created = saveUserMemory({
+    characterId: participantCharacterId,
+    x: tempLocation.x,
+    y: tempLocation.y,
+    story,
+    placeName,
+    stampColor,
+  });
+
+  setMemories(getStoredMemories());
+  setFlowStep('none');
+  setTempLocation(null);
+  setNewlyAddedMemoryId(created.id);
+
+  setToastNotification(
+    'Your memory is now part of Kala Ghoda. Tap your marker to view it.'
+  );
+
+  setTimeout(() => {
+    setToastNotification(null);
+  }, 5500);
+
+  void saveResponseToSupabase({
+    story,
+    placeName,
+    x: created.x,
+    y: created.y,
+    characterId: participantCharacterId,
+  });
+};
+
   // SAVE LOCALLY FIRST
   // The map updates immediately and does not wait for Supabase.
   const created = saveUserMemory({
