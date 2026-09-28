@@ -104,7 +104,7 @@ export async function fetchRemoteMemories(): Promise<Memory[]> {
         x: Math.round(posX),
         y: Math.round(posY),
         placeName: loc ? loc.name : 'Kala Ghoda',
-        story: resp?.response_text || resp?.story || resp?.text || 'A memory shared at this place in Kala Ghoda.',
+        story: resp?.answer_text || resp?.response_text || resp?.story || resp?.text || 'A memory shared at this place in Kala Ghoda.',
         createdAt: new Date(obs.created_at).toLocaleDateString('en-GB', {
           month: 'long',
           year: 'numeric',
@@ -120,7 +120,111 @@ export async function fetchRemoteMemories(): Promise<Memory[]> {
   }
 }
 
-export function saveUserMemory(memory: Omit<Memory, 'id' | 'createdAt'>): Memory {
+export async function saveUserMemory(
+  memory: Omit<Memory, 'id' | 'createdAt'>
+): Promise<Memory> {
+  const supabase = getSupabaseClient();
+
+  // 1. Create a participant record.
+  // Demographics are intentionally left empty for now.
+  const { data: participant, error: participantError } = await supabase
+    .from('participants')
+    .insert({})
+    .select('id')
+    .single();
+
+  if (participantError || !participant) {
+    console.error('Failed to create participant:', participantError);
+    throw participantError || new Error('Failed to create participant');
+  }
+
+  // 2. Create a session for this contribution.
+  const { data: session, error: sessionError } = await supabase
+    .from('sessions')
+    .insert({
+      participant_id: participant.id,
+    })
+    .select('id')
+    .single();
+
+  if (sessionError || !session) {
+    console.error('Failed to create session:', sessionError);
+    throw sessionError || new Error('Failed to create session');
+  }
+
+  // 3. Find the active story question.
+  const { data: question, error: questionError } = await supabase
+    .from('questions')
+    .select('id')
+    .eq('question_key', 'place_story')
+    .eq('active', true)
+    .limit(1)
+    .single();
+
+  if (questionError || !question) {
+    console.error('Failed to find story question:', questionError);
+    throw questionError || new Error('Active story question not found');
+  }
+
+  // 4. Save the actual participant response.
+  const { data: response, error: responseError } = await supabase
+    .from('responses')
+    .insert({
+      participant_id: participant.id,
+      session_id: session.id,
+      question_id: question.id,
+      answer_text: memory.story,
+    })
+    .select('id')
+    .single();
+
+  if (responseError || !response) {
+    console.error('Failed to save response:', responseError);
+    throw responseError || new Error('Failed to save response');
+  }
+
+  // 5. Convert the map percentage into approximate Kala Ghoda coordinates.
+  const longitude =
+    72.8300 + (memory.x / 100) * (72.8360 - 72.8300);
+
+  const latitude =
+    18.9260 +
+    ((100 - memory.y) / 100) * (18.9330 - 18.9260);
+
+  // 6. Create the location.
+  const { data: location, error: locationError } = await supabase
+    .from('locations')
+    .insert({
+      name: memory.placeName || 'Kala Ghoda',
+      latitude,
+      longitude,
+      source: 'participant',
+    })
+    .select('id')
+    .single();
+
+  if (locationError || !location) {
+    console.error('Failed to save location:', locationError);
+    throw locationError || new Error('Failed to save location');
+  }
+
+  // 7. Connect the response + location into an observation.
+  const { error: observationError } = await supabase
+    .from('observations')
+    .insert({
+      participant_id: participant.id,
+      session_id: session.id,
+      location_id: location.id,
+      response_id: response.id,
+      story_text: memory.story,
+    });
+
+  if (observationError) {
+    console.error('Failed to save observation:', observationError);
+    throw observationError;
+  }
+
+  // 8. Create the local Memory object used immediately by the map.
   const newMemory: Memory = {
     ...memory,
     id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -132,11 +236,14 @@ export function saveUserMemory(memory: Omit<Memory, 'id' | 'createdAt'>): Memory
     isNewlyAdded: true,
   };
 
+  // Keep local storage so the new marker can appear immediately.
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const existing = raw ? (JSON.parse(raw) as Memory[]) : [];
-    const updated = [newMemory, ...existing];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([newMemory, ...existing])
+    );
   } catch (err) {
     console.error('Failed to save memory to localStorage', err);
   }
